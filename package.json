@@ -1,0 +1,34 @@
+{
+  "description": "Sign in to OpenClaw with your Laintas account \u2014 no API key to copy. Models are billed to your Laintas balance.",
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "laintas"
+  ],
+  "license": "MIT",
+  "name": "openclaw-laintas",
+  "openclaw": {
+    "build": {
+      "openclawVersion": "2026.11.2",
+      "pluginSdkVersion": "2026.11.2"
+    },
+    "compat": {
+      "minGatewayVersion": "2026.3.24-beta.2",
+      "pluginApi": ">=2026.3.24-beta.2"
+    },
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "providers": [
+      "laintas"
+    ]
+  },
+  "scripts": {
+    "build": "esbuild index.ts --bundle --platform=node --format=esm --external:openclaw --external:\"openclaw/*\" --outfile=dist/index.js"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}
