@@ -17,7 +17,19 @@ if (Get-Command openclaw -ErrorAction SilentlyContinue) {
 }
 
 Write-Host 'Installing the Laintas plugin...'
-openclaw plugins install --force --accept-capabilities git:github.com/lin7c/openclaw-laintas
+# Install from the release archive (plain HTTPS download + local package
+# install): no git client needed on the user's machine.
+$tmp = Join-Path $env:TEMP "openclaw-laintas-$([guid]::NewGuid().ToString('N'))"
+New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+try {
+    $zip = Join-Path $tmp 'plugin.zip'
+    Invoke-WebRequest -Uri 'https://codeload.github.com/lin7c/openclaw-laintas/zip/refs/heads/main' -OutFile $zip
+    Expand-Archive -Path $zip -DestinationPath $tmp -Force
+    $pkg = Join-Path $tmp 'openclaw-laintas-main'
+    openclaw plugins install --force --accept-capabilities $pkg
+} finally {
+    Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
+}
 
 Write-Host ''
 Write-Host 'Done. Now sign in and pick a model:'

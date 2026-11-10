@@ -9,7 +9,7 @@
 set -euo pipefail
 
 OPENCLAW_VERSION="2026.11.2"
-PLUGIN_SPEC="git:github.com/lin7c/openclaw-laintas"
+PLUGIN_TARBALL="https://codeload.github.com/lin7c/openclaw-laintas/tar.gz/refs/heads/main"
 
 if command -v openclaw >/dev/null 2>&1; then
   echo "OpenClaw found: $(openclaw --version 2>/dev/null || echo present)"
@@ -29,7 +29,13 @@ else
 fi
 
 echo "Installing the Laintas plugin..."
-openclaw plugins install --force --accept-capabilities "$PLUGIN_SPEC"
+# Install from the release tarball (plain HTTPS download + local package
+# install): no git client or git subprocess needed on the user's machine.
+TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
+curl -fsSL "$PLUGIN_TARBALL" -o "$TMP/plugin.tar.gz"
+mkdir -p "$TMP/pkg"
+tar -xzf "$TMP/plugin.tar.gz" --strip-components=1 -C "$TMP/pkg"
+openclaw plugins install --force --accept-capabilities "$TMP/pkg"
 
 cat <<'EOF'
 

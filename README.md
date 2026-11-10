@@ -29,7 +29,8 @@ openclaw models set laintas/gpt-6-luna
 Or by hand:
 
 ```bash
-openclaw plugins install git:github.com/lin7c/openclaw-laintas
+curl -fsSL https://codeload.github.com/lin7c/openclaw-laintas/tar.gz/refs/heads/main | tar -xz -C /tmp
+openclaw plugins install --force --accept-capabilities /tmp/openclaw-laintas-main
 openclaw models auth login --provider laintas
 ```
 
