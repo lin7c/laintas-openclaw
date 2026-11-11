@@ -1,0 +1,72 @@
+name: Release
+
+# Builds laintas-openclaw with pnpm (the dist build peaks at ~5 GB of memory,
+# which is why it runs here instead of on a small dev box) and publishes a
+# tarball + SHA-256 checksum as a GitHub Release. The tarball layout matches
+# what the laintas-openclaw launcher expects:
+#   laintas-openclaw-<tag>/laintas-openclaw   (launcher)
+#   laintas-openclaw-<tag>/src/...            (dist runtime + package files)
+# Self-contained: uses only the default GITHUB_TOKEN, no upstream secrets.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve release version
+        id: ver
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build dist
+        run: pnpm build
+
+      - name: Stage tarball
+        run: |
+          STAGE="laintas-openclaw-${{ steps.ver.outputs.tag }}"
+          mkdir -p "$STAGE/src"
+          cp packaging/laintas-openclaw "$STAGE/laintas-openclaw"
+          chmod +x "$STAGE/laintas-openclaw"
+          cp -r dist "$STAGE/src/dist"
+          cp openclaw.mjs package.json "$STAGE/src/"
+          cp -r extensions "$STAGE/src/extensions"
+          tar -czf "$STAGE.tar.gz" "$STAGE"
+          sha256sum "$STAGE.tar.gz" > checksums.txt
+          ls -la "$STAGE.tar.gz" checksums.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.tag }}
+          files: |
+            laintas-openclaw-${{ steps.ver.outputs.tag }}.tar.gz
+            checksums.txt
+          fail_on_unmatched_files: true

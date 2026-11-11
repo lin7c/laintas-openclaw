@@ -1,0 +1,12 @@
+#!/bin/sh
+# laintas-openclaw launcher.
+#
+# Prefers a built dist tree when one exists (node src/openclaw.mjs);
+# otherwise runs the CLI from source through the repo's tsx loader
+# (src/entry.ts), which needs no build step. A full dist build
+# (`pnpm build` inside src/) needs ~5 GB of build memory.
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -f "$DIR/src/dist/entry.js" ] || [ -f "$DIR/src/dist/entry.mjs" ]; then
+  exec node "$DIR/src/openclaw.mjs" "$@"
+fi
+cd "$DIR/src" && exec node --import ./scripts/tsx.mjs src/entry.ts "$@"
