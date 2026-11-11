@@ -25,7 +25,11 @@
     "url": "git+https://github.com/openclaw/openclaw.git"
   },
   "bin": {
-    "openclaw": "openclaw.mjs"
+    "laintas-openclaw": "openclaw.mjs"
+  },
+  "openclawConfig": {
+    "name": "laintas-openclaw",
+    "configDir": ".laintas-openclaw"
   },
   "publishConfig": {
     "executableFiles": [
