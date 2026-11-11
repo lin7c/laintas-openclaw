@@ -24,16 +24,11 @@ export type AuthChoiceGroup = {
   options: AuthChoiceOption[];
 };
 
-export const CORE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
-  {
-    value: "custom-api-key",
-    label: "Custom Provider",
-    hint: "Any OpenAI or Anthropic compatible endpoint",
-    groupId: "custom",
-    groupLabel: "Custom Provider",
-    groupHint: "Any OpenAI or Anthropic compatible endpoint",
-  },
-];
+// laintas-openclaw: Laintas is the only model provider, and it contributes
+// its auth choice from the bundled plugin manifest. Upstream's generic
+// "Custom Provider" (custom-api-key) choice is removed so onboarding cannot
+// configure a third-party endpoint.
+export const CORE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [];
 
 /**
  * Provider-agnostic auth choices that `--token-provider` binds to a concrete

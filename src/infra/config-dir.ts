@@ -16,5 +16,5 @@ export function resolveConfigDir(
   if (configPath) {
     return path.dirname(resolveUserPath(configPath, env, homedir));
   }
-  return path.join(resolveRequiredHomeDir(env, homedir), ".openclaw");
+  return path.join(resolveRequiredHomeDir(env, homedir), ".laintas-openclaw");
 }

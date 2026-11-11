@@ -21,5 +21,5 @@ export function resolveDefaultAgentWorkspaceDir(
   if (profile && normalizeOptionalLowercaseString(profile) !== "default") {
     return path.join(resolveProfileStateDir(profile, env, homedir), "workspace");
   }
-  return path.join(home, ".openclaw", "workspace");
+  return path.join(home, ".laintas-openclaw", "workspace");
 }

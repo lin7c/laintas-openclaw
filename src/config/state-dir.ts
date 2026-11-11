@@ -8,13 +8,13 @@ export function resolveLegacyStateDirs(homedir: () => string = resolveRequiredHo
 }
 
 export function resolveNewStateDir(homedir: () => string = resolveRequiredHomeDir): string {
-  return path.join(homedir(), ".openclaw");
+  return path.join(homedir(), ".laintas-openclaw");
 }
 
 /**
  * State directory for mutable data (sessions, logs, caches).
  * Can be overridden via OPENCLAW_STATE_DIR.
- * Default: ~/.openclaw
+ * Default: ~/.laintas-openclaw
  */
 export function resolveStateDir(
   env: NodeJS.ProcessEnv = process.env,

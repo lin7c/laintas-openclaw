@@ -60,4 +60,4 @@ const pkg: PackageJson = workerVersion
   : (JSON.parse(readFileSync(join(getPackageDir(), "package.json"), "utf-8")) as PackageJson); // SAFETY: The package owns this metadata contract.
 
 export const APP_NAME: string = pkg.openclawConfig?.name || "openclaw";
-export const CONFIG_DIR_NAME: string = pkg.openclawConfig?.configDir || ".openclaw";
+export const CONFIG_DIR_NAME: string = pkg.openclawConfig?.configDir || ".laintas-openclaw";
