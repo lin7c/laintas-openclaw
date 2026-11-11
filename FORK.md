@@ -47,6 +47,30 @@ untouched, as is the generic OpenAI-compatible request path
   account's current model rows; a runtime catalog hook keeps the list
   fresh. Calls are billed to the user's Laintas account balance by the
   Laintas gateway — there is no API key to copy or paste.
+- **Model badges**: rows built from the signed-in `/v1/models` payload
+  carry the same badge the Laintas AI web picker shows —
+  `laintas-model` for models on Laintas' own GPUs, `Activated` for
+  models served by a key the user activated, otherwise the model's
+  tier (`T2`, ...), with that precedence (self-hosted, then activated,
+  then tier). The badge is appended to the display name
+  (`gpt-6-luna · T2`); the model `id` is never changed, so routing and
+  billing are unaffected. It has to ride in `name`: the public model
+  projection drops catalog `tags`, and the persisted-config model
+  schema (`ModelDefinitionSchema`) is strict and has no tags field, so
+  no metadata channel reaches the rendering surfaces. `name` is what
+  the pickers render (the TUI model selector shows it as the row
+  description whenever it differs from the id) and what
+  `models list --json` reports; the plain `models list` table prints
+  only the model ref and core-owned role tags, so the badge does not
+  appear there.
+  Badge data is the gateway's per-model capability flags (`tier`,
+  `selfHosted`, `ownKey`); the plugin accepts them flat on each
+  `/models` entry, nested under a `laintas` object on the entry, or in
+  a top-level `modelCapabilities` map. Until the `/v1` facade passes
+  those fields through (it currently emits only
+  id/object/created/owned_by), rows simply carry no badge — and the
+  pre-login static row never has one, since badge data only exists in
+  the signed-in payload.
 - **First run**: the bare command already routed fresh installs into
   the onboarding wizard; the wizard's auth step now offers only
   Laintas. Non-interactive commands never wait for device approval.

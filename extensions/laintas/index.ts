@@ -59,6 +59,45 @@ type ModelRow = {
   maxTokens: number;
 };
 
+// The badge a picker shows next to a model, mirroring the Laintas AI web
+// picker: models on Laintas' own GPUs are tagged "laintas-model", models
+// served by a key the user activated are tagged "Activated", and
+// third-party models carry their tier ("T2", ...). Precedence matches the
+// web UI: self-hosted first, then activated, then tier.
+//
+// The gateway reports these per model as capability flags (tier /
+// selfHosted / ownKey). Where they ride in the /v1/models payload depends
+// on the facade: flat on each entry, nested under a "laintas" object, or
+// in a top-level "modelCapabilities" map keyed by model id — accept all
+// of those shapes so the badge survives whichever one the facade ships.
+//
+// The badge rides in the display `name` ("<id> · <badge>") because no
+// catalog metadata field reaches the list/picker rendering: the public
+// model projection drops catalog `tags`, and the persisted-config model
+// schema is strict and has no tags field at all. The model `id` is never
+// touched — routing and billing key off it.
+function modelBadge(raw: unknown): string | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const cap = raw as Record<string, unknown>;
+  const nested =
+    cap.laintas && typeof cap.laintas === "object"
+      ? (cap.laintas as Record<string, unknown>)
+      : undefined;
+  const pick = (...keys: string[]): unknown => {
+    for (const src of [cap, nested]) {
+      if (!src) continue;
+      for (const key of keys) {
+        if (src[key] !== undefined) return src[key];
+      }
+    }
+    return undefined;
+  };
+  if (pick("selfHosted", "self_hosted") === true) return "laintas-model";
+  if (pick("ownKey", "own_key") === true) return "Activated";
+  const tier = pick("tier");
+  return typeof tier === "string" && tier.trim() ? tier.trim() : undefined;
+}
+
 async function fetchModelRows(token: string): Promise<ModelRow[]> {
   const resp = await fetch(`${API_BASE}/models`, {
     headers: {
@@ -67,20 +106,28 @@ async function fetchModelRows(token: string): Promise<ModelRow[]> {
     },
   });
   if (!resp.ok) return [];
-  const body = (await resp.json()) as { data?: Array<{ id: string }> };
+  const body = (await resp.json()) as {
+    data?: Array<Record<string, unknown>>;
+    modelCapabilities?: Record<string, unknown>;
+  };
+  const caps = body.modelCapabilities || {};
   return (body.data || [])
-    .filter((entry) => entry?.id)
-    .map((entry) => ({
-      id: entry.id,
-      name: entry.id,
-      reasoning: true,
-      input: ["text", "image"] as Array<"text" | "image">,
-      // Real prices are settled in the Laintas account; the local cost
-      // readout is not the bill.
-      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-      contextWindow: 128000,
-      maxTokens: 8192,
-    }));
+    .filter((entry) => typeof entry?.id === "string" && entry.id)
+    .map((entry) => {
+      const id = entry.id as string;
+      const badge = modelBadge(entry) ?? modelBadge(caps[id]);
+      return {
+        id,
+        name: badge ? `${id} · ${badge}` : id,
+        reasoning: true,
+        input: ["text", "image"] as Array<"text" | "image">,
+        // Real prices are settled in the Laintas account; the local cost
+        // readout is not the bill.
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        contextWindow: 128000,
+        maxTokens: 8192,
+      };
+    });
 }
 
 async function runDeviceLogin(ctx: any) {
@@ -206,6 +253,8 @@ export default definePluginEntry({
         // Advertise the default model before sign-in so model resolution
         // succeeds and a pre-login run fails at auth, not at model lookup.
         // The full list replaces this via the catalog hook after login.
+        // No badge on this row: badge data only exists in the signed-in
+        // /models payload, never in offline knowledge.
         run: async () => ({
           providers: {
             [PROVIDER_ID]: {
