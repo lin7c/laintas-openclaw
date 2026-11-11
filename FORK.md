@@ -115,3 +115,16 @@ upstream provider extensions, re-empty the external provider catalog
 if upstream regenerates it, and re-run the verification battery
 (version/help branding, `models list`, Laintas device login, a removed
 provider failing, state dir location, pre-login agent auth error).
+
+## Build note: update-compatibility inventory
+
+Upstream's `runtime-postbuild` bridges the previous npm releases'
+self-update chunks (recorded in `scripts/lib/update-compat-inventory.json`)
+into every new build, so an in-flight upstream update can hand off across
+versions. This fork ships no self-updater (the `update` command is a stub),
+so there is nothing to bridge from: the inventory is trimmed to the base
+release entry with an empty chunk list. Without this, the dist build fails
+in `runtime-postbuild` with "Cannot bridge ... no equivalent current
+export" for the stubbed-out update subsystem. If a future laintas-openclaw
+release ever needs cross-version bridging, record its chunks with
+`pnpm update:compat:gen` instead of restoring upstream's entries.
