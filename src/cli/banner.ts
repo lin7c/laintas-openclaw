@@ -37,7 +37,7 @@ export function formatCliBannerLine(version: string, options: BannerOptions = {}
     options,
   );
   const rich = options.richTty ?? isRich();
-  const title = decorativePrefix("🦞", "OpenClaw", options);
+  const title = decorativePrefix("🦞", "laintas-openclaw", options);
   const prefix = decorativeEmoji("🦞", options);
   const indent = prefix ? `${prefix} ` : "";
   const columns = options.columns ?? process.stdout.columns ?? 120;

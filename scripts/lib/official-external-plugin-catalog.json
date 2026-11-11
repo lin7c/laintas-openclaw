@@ -62,79 +62,6 @@
       }
     },
     {
-      "name": "@openclaw/codex",
-      "description": "OpenClaw Codex app-server harness and native session catalog",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "codex",
-          "label": "Codex"
-        },
-        "contracts": {
-          "migrationProviders": [
-            "codex"
-          ]
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/codex",
-          "npmSpec": "@openclaw/codex",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.5.1-beta.1"
-        },
-        "setup": {
-          "nativeSessionCatalog": {
-            "label": "Codex",
-            "legacyDefaultEnabled": true,
-            "description": "Existing native Codex conversations on this Gateway and eligible paired nodes.",
-            "nodeCommands": [
-              "codex.appServer.threads.list.v1",
-              "codex.appServer.thread.turns.list.v1",
-              "codex.sessionCatalog.transcript.read.v1",
-              "codex.terminal.resume.v1",
-              "codex.cli.sessions.list"
-            ]
-          }
-        }
-      }
-    },
-    {
-      "name": "@openclaw/copilot",
-      "description": "OpenClaw GitHub Copilot agent runtime plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "copilot",
-          "label": "GitHub Copilot agent runtime"
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/copilot",
-          "npmSpec": "@openclaw/copilot",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.5.28"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/muse",
-      "description": "OpenClaw Muse Code agent runtime plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "muse",
-          "label": "Muse Code"
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/muse",
-          "npmSpec": "@openclaw/muse",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.10.3"
-        }
-      }
-    },
-    {
       "name": "@openclaw/cua-computer",
       "description": "Experimental CUA Driver computer control for macOS, Windows, and Linux node hosts",
       "source": "official",
@@ -524,29 +451,6 @@
           "npmSpec": "@openclaw/memory-lancedb",
           "defaultChoice": "npm",
           "minHostVersion": ">=2026.5.31"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/llama-cpp-provider",
-      "description": "OpenClaw managed llama.cpp server provider plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "llama-cpp",
-          "label": "llama.cpp Provider"
-        },
-        "contracts": {
-          "embeddingProviders": [
-            "local"
-          ]
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/llama-cpp-provider",
-          "npmSpec": "@openclaw/llama-cpp-provider",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.6.2"
         }
       }
     },

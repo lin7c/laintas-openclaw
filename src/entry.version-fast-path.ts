@@ -29,7 +29,9 @@ export function tryHandleRootVersionFastPath(argv: string[]): boolean {
   Promise.all([import("./version.js"), import("./infra/git-commit.js")])
     .then(([{ VERSION }, { resolveCommitHash }]) => {
       const commit = resolveCommitHash({ moduleUrl: import.meta.url });
-      console.log(commit ? `OpenClaw ${VERSION} (${commit})` : `OpenClaw ${VERSION}`);
+      console.log(
+        commit ? `laintas-openclaw ${VERSION} (${commit})` : `laintas-openclaw ${VERSION}`,
+      );
       process.exitCode = 0;
     })
     .catch(onError);
