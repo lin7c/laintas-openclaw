@@ -6,8 +6,8 @@ name: Release
 # what the laintas-openclaw launcher expects:
 #   laintas-openclaw-<tag>/laintas-openclaw   (launcher)
 #   laintas-openclaw-<tag>/src/...            (package root: dist runtime,
-#     loose *.mjs entry modules, production node_modules and the packages/
-#     workspace dirs those modules and symlinks resolve against)
+#     loose *.mjs entry modules, closure-pruned node_modules and the
+#     packages/ workspace dirs those modules and symlinks resolve against)
 # Self-contained: uses only the default GITHUB_TOKEN, no upstream secrets.
 
 on:
@@ -55,10 +55,22 @@ jobs:
       # (@openclaw/* workspace packages, kysely, ...) against the root
       # node_modules, and the relative symlinks inside extensions/, dist/
       # and packages/ point at root node_modules/.pnpm and packages/*.
-      # Stage that whole production graph (dev deps pruned) or the tarball
-      # dies on startup with ERR_MODULE_NOT_FOUND.
+      # Stage that production graph (dev deps pruned, then cut to the
+      # runtime closure by the step above) or the tarball dies on
+      # startup with ERR_MODULE_NOT_FOUND.
       - name: Prune dev dependencies
         run: pnpm prune --prod
+
+      # On top of the prod prune, cut node_modules down to the runtime
+      # closure of the shipped code (root deps, workspace links, and
+      # every bare specifier the shipped dist/extensions/packages code
+      # imports). The whole-graph copy shipped in v1.0.3 was 918 MB;
+      # the closure is roughly half that. See the script header for the
+      # keep-set definition and the --optional=none rationale (native
+      # payloads behind optionalDependency edges are resolved lazily
+      # at feature-use time, never imported by shipped code).
+      - name: Prune node_modules to the runtime closure
+        run: node packaging/prune-node-modules.mjs . --optional=none --delete
 
       - name: Stage tarball
         run: |
