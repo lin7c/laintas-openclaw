@@ -5,7 +5,9 @@ name: Release
 # tarball + SHA-256 checksum as a GitHub Release. The tarball layout matches
 # what the laintas-openclaw launcher expects:
 #   laintas-openclaw-<tag>/laintas-openclaw   (launcher)
-#   laintas-openclaw-<tag>/src/...            (dist runtime + package files)
+#   laintas-openclaw-<tag>/src/...            (package root: dist runtime,
+#     loose *.mjs entry modules, production node_modules and the packages/
+#     workspace dirs those modules and symlinks resolve against)
 # Self-contained: uses only the default GITHUB_TOKEN, no upstream secrets.
 
 on:
@@ -48,6 +50,16 @@ jobs:
       - name: Build dist
         run: pnpm build
 
+      # The dist runtime is not self-contained: openclaw.mjs imports loose
+      # root-level *.mjs modules, dist code resolves bare specifiers
+      # (@openclaw/* workspace packages, kysely, ...) against the root
+      # node_modules, and the relative symlinks inside extensions/, dist/
+      # and packages/ point at root node_modules/.pnpm and packages/*.
+      # Stage that whole production graph (dev deps pruned) or the tarball
+      # dies on startup with ERR_MODULE_NOT_FOUND.
+      - name: Prune dev dependencies
+        run: pnpm prune --prod
+
       - name: Stage tarball
         run: |
           STAGE="laintas-openclaw-${{ steps.ver.outputs.tag }}"
@@ -55,8 +67,22 @@ jobs:
           cp packaging/laintas-openclaw "$STAGE/laintas-openclaw"
           chmod +x "$STAGE/laintas-openclaw"
           cp -r dist "$STAGE/src/dist"
-          cp openclaw.mjs package.json "$STAGE/src/"
+          cp openclaw.mjs package.json \
+            cli-root-options.mjs \
+            gateway-prewarm.mjs \
+            gateway-run-argv.mjs \
+            gateway-shutdown-budget.mjs \
+            node-compile-cache.mjs \
+            node-host-launcher.mjs \
+            node-runtime-env.mjs \
+            node-runtime-recovery.mjs \
+            node-runtime-update.mjs \
+            node-sqlite.mjs \
+            node-version.mjs \
+            "$STAGE/src/"
           cp -r extensions "$STAGE/src/extensions"
+          cp -al node_modules "$STAGE/src/node_modules"
+          cp -al packages "$STAGE/src/packages"
           tar -czf "$STAGE.tar.gz" "$STAGE"
           sha256sum "$STAGE.tar.gz" > checksums.txt
           ls -la "$STAGE.tar.gz" checksums.txt
